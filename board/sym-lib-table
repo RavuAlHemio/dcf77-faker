@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name "Switch_SMD")(type "KiCad")(uri "${KIPRJMOD}/Switch_SMD.kicad_sym")(options "")(descr ""))
+  (lib (name "Oscillator_Microchip")(type "KiCad")(uri "${KIPRJMOD}/Oscillator_Microchip.kicad_sym")(options "")(descr ""))
+)

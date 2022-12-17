@@ -1,0 +1,6 @@
+(fp_lib_table
+  (lib (name "Diode_SMD_MicroSMP")(type "KiCad")(uri "${KIPRJMOD}/Diode_SMD_MicroSMP.pretty")(options "")(descr ""))
+  (lib (name "JLCPCB")(type "KiCad")(uri "${KIPRJMOD}/JLCPCB.pretty")(options "")(descr ""))
+  (lib (name "Button_Switch_SMD_Side")(type "KiCad")(uri "${KIPRJMOD}/Button_Switch_SMD_Side.pretty")(options "")(descr ""))
+  (lib (name "Oscillator_Microchip")(type "KiCad")(uri "${KIPRJMOD}/Oscillator_Microchip.pretty")(options "")(descr ""))
+)
