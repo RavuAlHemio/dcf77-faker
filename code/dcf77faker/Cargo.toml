@@ -1,0 +1,9 @@
+[package]
+name = "dcf77faker"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+atsaml21g18b = { version = "0.1", features = ["critical-section", "rt"] }
+cortex-m = { version = "0.7", features = ["critical-section-single-core"] }
+cortex-m-rt = { version = "0.7" }
