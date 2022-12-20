@@ -35,9 +35,9 @@ const fn calculate_baud_divisor() -> u8 {
 }
 
 
-/// An error that may occur during an I<sup>2</sup>C operation.
+/// The type of error that may occur during an I<sup>2</sup>C operation.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum I2cError {
+pub enum I2cErrorKind {
     /// The I<sup>2</sup>C controller has been preempted by another device becoming controller.
     ArbitrationLost,
 
@@ -48,27 +48,99 @@ pub enum I2cError {
     ///
     /// `index` specifies at which location in the data no acknowledgement was provided. If the
     /// unacknowledged byte was the address byte, `index` is equal to [`usize::MAX`].
-    NotAcknowledged { byte: u8, index: usize },
+    NotAcknowledged,
 
     /// The given address is not a valid address.
     ///
     /// This error is generally raised if the topmost bit is set.
-    InvalidAddress(u8),
+    InvalidAddress,
 }
-impl fmt::Display for I2cError {
+impl I2cErrorKind {
+    pub const fn to_error(&self, byte_info: I2cErrorByteInfo) -> I2cError {
+        I2cError {
+            kind: *self,
+            byte_info,
+        }
+    }
+
+    pub const fn at_address(&self, address: u8) -> I2cError {
+        self.to_error(I2cErrorByteInfo::Address(address))
+    }
+
+    pub const fn at_data_index(&self, data: u8, index: usize) -> I2cError {
+        self.to_error(I2cErrorByteInfo::Data {
+            index,
+            byte: data,
+        })
+    }
+
+    pub fn at_stop_bit(&self) -> I2cError {
+        self.to_error(I2cErrorByteInfo::StopBit)
+    }
+}
+impl fmt::Display for I2cErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::ArbitrationLost
                 => write!(f, "bus arbitration lost"),
             Self::BusError
                 => write!(f, "bus error"),
-            Self::NotAcknowledged { byte, index: usize::MAX }
-                => write!(f, "address 0b{:07b} not acknowledged", byte),
-            Self::NotAcknowledged { byte, index }
-                => write!(f, "data byte 0x{:02X} at index {} not acknowledged", byte, index),
-            Self::InvalidAddress(address)
-                => write!(f, "address 0b{:08b} invalid", address),
+            Self::NotAcknowledged
+                => write!(f, "byte not acknowledged"),
+            Self::InvalidAddress
+                => write!(f, "invalid address"),
         }
+    }
+}
+
+
+/// The byte of an I<sup>2</sup>C transmission at which an error was detected.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum I2cErrorByteInfo {
+    /// The address byte (includes the read/write flag).
+    Address(u8),
+
+    /// The data byte at the given index.
+    Data { index: usize, byte: u8 },
+
+    /// The stop bit at the end of the transmission.
+    StopBit,
+}
+impl I2cErrorByteInfo {
+    /// Whether the byte position is the address.
+    pub fn is_address(&self) -> bool {
+        match self {
+            Self::Address(_) => true,
+            _ => false,
+        }
+    }
+}
+impl fmt::Display for I2cErrorByteInfo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Address(address)
+                => write!(f, "address byte 0b{:07b}", address),
+            Self::Data { index, byte }
+                => write!(f, "data byte {0} (0x{0:02X}) at index {1} (0x{1:X})", byte, index),
+            Self::StopBit
+                => write!(f, "stop bit"),
+        }
+    }
+}
+
+
+/// An error that may occur during an I<sup>2</sup>C operation.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct I2cError {
+    /// The kind of error that occurred.
+    pub kind: I2cErrorKind,
+
+    /// Information about the byte being transferred when the error occurred.
+    pub byte_info: I2cErrorByteInfo,
+}
+impl fmt::Display for I2cError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} at {}", self.kind, self.byte_info)
     }
 }
 
@@ -126,7 +198,7 @@ pub(crate) trait SercomI2cController {
 
     /// Waits until a byte is transmitted, then checks the current bus status and returns the
     /// corresponding error if one has occurred.
-    fn wait_and_check_bus_status(register_block: &I2CM, byte: u8, index: usize) -> Result<(), I2cError> {
+    fn wait_and_check_bus_status(register_block: &I2CM, byte_info: I2cErrorByteInfo) -> Result<(), I2cError> {
         // wait until our controller status is known, then clear that bit
         while register_block.intflag.read().mb().bit_is_clear() {
         }
@@ -148,7 +220,7 @@ pub(crate) trait SercomI2cController {
                     .arblost().set_bit()
                 )
             };
-            return Err(I2cError::BusError);
+            return Err(I2cErrorKind::BusError.to_error(byte_info));
         }
         if bus_status.arblost().bit_is_set() {
             unsafe {
@@ -156,12 +228,12 @@ pub(crate) trait SercomI2cController {
                     .arblost().set_bit()
                 )
             };
-            return Err(I2cError::ArbitrationLost);
+            return Err(I2cErrorKind::ArbitrationLost.to_error(byte_info));
         }
 
         // maybe the transmission succeeded but nobody responded
         if bus_status.rxnack().bit_is_clear() {
-            return Err(I2cError::NotAcknowledged { byte, index });
+            return Err(I2cErrorKind::NotAcknowledged.to_error(byte_info));
         }
 
         Ok(())
@@ -170,7 +242,7 @@ pub(crate) trait SercomI2cController {
     /// Sends data to a peripheral device.
     fn send<I: IntoIterator<Item = u8>>(peripherals: &mut Peripherals, address: u8, data: I) -> Result<(), I2cError> {
         if address & 0b1000_0000 != 0 {
-            return Err(I2cError::InvalidAddress(address));
+            return Err(I2cErrorKind::InvalidAddress.at_address(address));
         }
 
         let register_block = Self::get_register_block(peripherals);
@@ -186,7 +258,7 @@ pub(crate) trait SercomI2cController {
         while register_block.syncbusy.read().sysop().bit_is_set() {
         }
 
-        Self::wait_and_check_bus_status(register_block, address_and_write, usize::MAX)?;
+        Self::wait_and_check_bus_status(register_block, I2cErrorByteInfo::Address(address))?;
 
         // write data
         let mut bytes_written = 0;
@@ -197,7 +269,7 @@ pub(crate) trait SercomI2cController {
             );
             while register_block.syncbusy.read().sysop().bit_is_set() {
             }
-            Self::wait_and_check_bus_status(register_block, byte, bytes_written)?;
+            Self::wait_and_check_bus_status(register_block, I2cErrorByteInfo::Data { index: bytes_written, byte })?;
             bytes_written += 1;
         }
 
@@ -207,7 +279,7 @@ pub(crate) trait SercomI2cController {
         );
         while register_block.syncbusy.read().sysop().bit_is_set() {
         }
-        Self::wait_and_check_bus_status(register_block, 0x00, bytes_written)
+        Self::wait_and_check_bus_status(register_block, I2cErrorByteInfo::StopBit)
     }
 }
 
