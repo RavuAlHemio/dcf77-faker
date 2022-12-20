@@ -147,11 +147,16 @@ impl fmt::Display for I2cError {
 
 /// A SERCOM device that can act as an I<sup>2</sup>C controller.
 pub(crate) trait SercomI2cController {
-    /// Obtains a pointer to the SERCOM register block.
+    /// Unmasks the clock signals going to the SERCOM device.
+    fn enable_clock(peripherals: &mut Peripherals);
+
+    /// Obtains a reference to the SERCOM register block.
     fn get_register_block(peripherals: &mut Peripherals) -> &atsaml21g18b::sercom0::I2CM;
 
     /// Sets up the SERCOM device as an I<sup>2</sup>C controller.
     fn setup_controller(peripherals: &mut Peripherals) {
+        Self::enable_clock(peripherals);
+
         let register_block = Self::get_register_block(peripherals);
 
         // reset SERCOM
@@ -337,6 +342,21 @@ pub(crate) trait SercomI2cController {
 
 pub(crate) struct Sercom0I2cController;
 impl SercomI2cController for Sercom0I2cController {
+    fn enable_clock(peripherals: &mut Peripherals) {
+        const GCLK_SERCOM0_CORE: usize = 18;
+        const GCLK_SERCOM0_THROUGH_SERCOM4_SLOW: usize = 17;
+
+        peripherals.MCLK.apbcmask.modify(|_, w| w
+            .sercom0_().set_bit()
+        );
+        peripherals.GCLK.pchctrl[GCLK_SERCOM0_CORE].modify(|_, w| w
+            .chen().set_bit()
+        );
+        peripherals.GCLK.pchctrl[GCLK_SERCOM0_THROUGH_SERCOM4_SLOW].modify(|_, w| w
+            .chen().set_bit()
+        );
+    }
+
     fn get_register_block(peripherals: &mut Peripherals) -> &atsaml21g18b::sercom0::I2CM {
         unsafe { (&*atsaml21g18b::SERCOM0::PTR).i2cm() }
     }
@@ -344,6 +364,21 @@ impl SercomI2cController for Sercom0I2cController {
 
 pub(crate) struct Sercom1I2cController;
 impl SercomI2cController for Sercom1I2cController {
+    fn enable_clock(peripherals: &mut Peripherals) {
+        const GCLK_SERCOM1_CORE: usize = 19;
+        const GCLK_SERCOM0_THROUGH_SERCOM4_SLOW: usize = 17;
+
+        peripherals.MCLK.apbcmask.modify(|_, w| w
+            .sercom1_().set_bit()
+        );
+        peripherals.GCLK.pchctrl[GCLK_SERCOM1_CORE].modify(|_, w| w
+            .chen().set_bit()
+        );
+        peripherals.GCLK.pchctrl[GCLK_SERCOM0_THROUGH_SERCOM4_SLOW].modify(|_, w| w
+            .chen().set_bit()
+        );
+    }
+
     fn get_register_block(peripherals: &mut Peripherals) -> &atsaml21g18b::sercom0::I2CM {
         unsafe { (&*atsaml21g18b::SERCOM1::PTR).i2cm() }
     }
