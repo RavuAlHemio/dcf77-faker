@@ -281,6 +281,57 @@ pub(crate) trait SercomI2cController {
         }
         Self::wait_and_check_bus_status(register_block, I2cErrorByteInfo::StopBit)
     }
+
+    /// Receives data from a peripheral device.
+    fn receive<F: FnMut(u8) -> bool>(peripherals: &mut Peripherals, address: u8, mut handle_byte: F) -> Result<(), I2cError> {
+        if address & 0b1000_0000 != 0 {
+            return Err(I2cErrorKind::InvalidAddress.at_address(address));
+        }
+
+        let register_block = Self::get_register_block(peripherals);
+
+        // set address
+        let address_and_read: u8 = (address << 1) | 0b1;
+        register_block.addr.modify(|_, w| w
+            .addr().variant(address_and_read.into())
+            .lenen().clear_bit() // no DMA
+            .hs().clear_bit() // no high-speed transfer
+            .tenbiten().clear_bit() // disable 10-bit addressing
+        );
+        while register_block.syncbusy.read().sysop().bit_is_set() {
+        }
+        Self::wait_and_check_bus_status(register_block, I2cErrorByteInfo::Address(address))?;
+
+        // read data
+        let mut bytes_read = 0;
+        loop {
+            // receive
+            let byte = register_block.data.read().data().bits();
+            Self::wait_and_check_bus_status(register_block, I2cErrorByteInfo::Data { byte, index: bytes_read })?;
+            bytes_read += 1;
+
+            let acknowledge = handle_byte(byte);
+            if acknowledge {
+                // send acknowledge bit and read again
+                register_block.ctrlb.modify(|_, w| w
+                    .ackact().set_bit()
+                    .cmd().variant(CMD_BYTE_READ)
+                );
+                while register_block.syncbusy.read().sysop().bit_is_set() {
+                }
+            } else {
+                // don't acknowledge and send STOP
+                register_block.ctrlb.modify(|_, w| w
+                    .ackact().clear_bit()
+                    .cmd().variant(CMD_STOP)
+                );
+                while register_block.syncbusy.read().sysop().bit_is_set() {
+                }
+                break;
+            }
+        }
+        Self::wait_and_check_bus_status(register_block, I2cErrorByteInfo::StopBit)
+    }
 }
 
 
@@ -296,9 +347,4 @@ impl SercomI2cController for Sercom1I2cController {
     fn get_register_block(peripherals: &mut Peripherals) -> &atsaml21g18b::sercom0::I2CM {
         unsafe { (&*atsaml21g18b::SERCOM1::PTR).i2cm() }
     }
-}
-
-
-pub(crate) fn setup_controller(peripherals: &mut Peripherals) {
-
 }
