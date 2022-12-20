@@ -6,6 +6,7 @@ mod calibration;
 mod i2c_controller;
 mod init;
 mod pin;
+mod pwm;
 
 
 use core::panic::PanicInfo;
