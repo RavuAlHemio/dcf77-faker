@@ -4,6 +4,14 @@
 use atsaml21g18b::Peripherals;
 
 
+/// The speed of the core clock, timed by XOSC.
+pub const CORE_CLOCK_SPEED_HZ: u32 = 31_000_000;
+
+
+/// The speed of the slow clock, timed by XOSC32K.
+pub const SLOW_CLOCK_SPEED_HZ: u32 = 32_768;
+
+
 /// Sets up the microcontroller's clocks that will be used.
 ///
 /// The following clock setup is used by `dcf77faker`:
