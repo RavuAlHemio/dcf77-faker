@@ -7,11 +7,12 @@ mod i2c_controller;
 mod init;
 mod pin;
 mod pwm;
+mod rtc;
 
 
 use core::panic::PanicInfo;
 
-use atsaml21g18b::Peripherals;
+use atsaml21g18b::{interrupt, Peripherals};
 use cortex_m_rt::entry;
 
 use crate::pin::PeripheralIndex;
@@ -73,4 +74,10 @@ fn main() -> ! {
 
     loop {
     }
+}
+
+
+#[interrupt]
+fn RTC() {
+    // TODO
 }

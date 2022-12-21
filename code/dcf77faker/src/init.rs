@@ -122,6 +122,11 @@ pub(crate) fn setup_clocks(peripherals: &mut Peripherals) {
     while peripherals.GCLK.syncbusy.read().genctrl3().bit_is_set() {
     }
 
+    // plug XOSC32K into RTC
+    peripherals.OSC32KCTRL.rtcctrl.modify(|_, w| w
+        .rtcsel().xosc32k()
+    );
+
     // connect GCG3 as slow clock to SERCOM0
     const GCLK_SERCOM0_TO_SERCOM4_SLOW: usize = 18;
     peripherals.GCLK.pchctrl[GCLK_SERCOM0_TO_SERCOM4_SLOW].modify(|_, w| w
