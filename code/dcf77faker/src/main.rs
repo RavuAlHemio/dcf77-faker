@@ -5,6 +5,7 @@
 mod calibration;
 mod dcf77;
 mod i2c_controller;
+mod i2c_display;
 mod init;
 mod pin;
 mod pwm;
