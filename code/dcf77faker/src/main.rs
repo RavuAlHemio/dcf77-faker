@@ -3,6 +3,7 @@
 
 
 mod calibration;
+mod dcf77;
 mod i2c_controller;
 mod init;
 mod pin;
