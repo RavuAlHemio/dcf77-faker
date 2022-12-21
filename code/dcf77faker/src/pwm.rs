@@ -115,8 +115,8 @@ pub(crate) trait TccPwm {
     /// This defines the frequency of the PWM signal; to define the duty cycle, see
     /// [`set_duty_cycle`].
     ///
-    /// [`CORE_CLOCK_SPEED_HZ`](crate::init::CORE_CLOCK_SPEED_HZ)
-    /// [`set_duty_cycle`](TccPwm::set_duty_cycle)
+    /// [`CORE_CLOCK_SPEED_HZ`]: crate::init::CORE_CLOCK_SPEED_HZ
+    /// [`set_duty_cycle`]: TccPwm::set_duty_cycle
     fn set_period(peripherals: &mut Peripherals, period: u32) {
         let register_block = Self::get_register_block(peripherals);
         register_block.per().write(|w| w
@@ -133,8 +133,8 @@ pub(crate) trait TccPwm {
     /// enabled when the counter is 0, is disabled again. It is then re-enabled when the counter
     /// reaches the period value (see [`set_period`]), as it is then reset to 0.
     ///
-    /// [`CORE_CLOCK_SPEED_HZ`](crate::init::CORE_CLOCK_SPEED_HZ)
-    /// [`set_period`](TccPwm::set_period)
+    /// [`CORE_CLOCK_SPEED_HZ`]: crate::init::CORE_CLOCK_SPEED_HZ
+    /// [`set_period`]: TccPwm::set_period
     fn set_duty_cycle(peripherals: &mut Peripherals, duty_cycle: u32) {
         let register_block = Self::get_register_block(peripherals);
         register_block.cc()[0].write(|w| w
@@ -150,8 +150,8 @@ pub(crate) trait TccPwm {
     /// both values right after one another before waiting for them to synchronize, which might be
     /// faster if both values are changed simultaneously.
     ///
-    /// [`set_period`](TccPwm::set_period)
-    /// [`set_duty_cycle`](TccPwm::set_duty_cycle)
+    /// [`set_period`]: TccPwm::set_period
+    /// [`set_duty_cycle`]: TccPwm::set_duty_cycle
     fn set_period_and_duty_cycle(peripherals: &mut Peripherals, period: u32, duty_cycle: u32) {
         let register_block = Self::get_register_block(peripherals);
         register_block.per().write(|w| w
