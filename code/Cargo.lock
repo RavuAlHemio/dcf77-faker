@@ -75,6 +75,7 @@ dependencies = [
  "atsaml21g18b",
  "cortex-m",
  "cortex-m-rt",
+ "vcell",
 ]
 
 [[package]]

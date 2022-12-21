@@ -8,6 +8,7 @@ mod init;
 mod pin;
 mod pwm;
 mod rtc;
+mod sync_vcell;
 
 
 use core::panic::PanicInfo;

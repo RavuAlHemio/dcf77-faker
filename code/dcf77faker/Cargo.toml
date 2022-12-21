@@ -7,3 +7,4 @@ edition = "2021"
 atsaml21g18b = { version = "0.1", features = ["critical-section", "rt"] }
 cortex-m = { version = "0.7", features = ["critical-section-single-core"] }
 cortex-m-rt = { version = "0.7" }
+vcell = { version = "0.1" }
