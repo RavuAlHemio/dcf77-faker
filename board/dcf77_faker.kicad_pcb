@@ -395,7 +395,7 @@
     (property "Sheetfile" "dcf77_faker.kicad_sch")
     (property "Sheetname" "")
     (path "/bfe9033f-b4ef-4124-989c-d2657c380263")
-    (attr exclude_from_pos_files)
+    (attr exclude_from_pos_files exclude_from_bom)
     (fp_text reference "NT2" (at 0 1.905 180) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 67563a90-5be4-4479-83fa-7819fc805568)
@@ -547,7 +547,7 @@
     (property "Sheetfile" "dcf77_faker.kicad_sch")
     (property "Sheetname" "")
     (path "/38d7182a-ab8a-40f0-8292-5a5c3cad8d53")
-    (attr exclude_from_pos_files)
+    (attr exclude_from_pos_files exclude_from_bom)
     (fp_text reference "NT4" (at -2.413 -0.254) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 38c3dbfb-e4a6-4e67-8790-267cb8c8c0d8)
@@ -931,7 +931,7 @@
     (property "Sheetfile" "dcf77_faker.kicad_sch")
     (property "Sheetname" "")
     (path "/195cfb0c-ef74-4312-838d-4f45afaa51c5")
-    (attr exclude_from_pos_files)
+    (attr exclude_from_pos_files exclude_from_bom)
     (fp_text reference "NT1" (at 0 -2.032 180) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp d59d852c-a59f-400f-b705-19fd86fda3b0)
@@ -1834,7 +1834,7 @@
     (property "Sheetfile" "dcf77_faker.kicad_sch")
     (property "Sheetname" "")
     (path "/d0cd7e50-71db-44f5-a7de-bdbe89fb0723")
-    (attr smd)
+    (attr smd exclude_from_pos_files exclude_from_bom)
     (fp_text reference "X2" (at -0.635 -4.826) (layer "F.SilkS")
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp e082807d-2cb1-4899-8ac7-92e1bf50a9ee)
@@ -2062,7 +2062,7 @@
     (property "Sheetfile" "dcf77_faker.kicad_sch")
     (property "Sheetname" "")
     (path "/a663237b-2b36-4763-a53a-fe1a257f9547")
-    (attr exclude_from_pos_files)
+    (attr exclude_from_pos_files exclude_from_bom)
     (fp_text reference "NT3" (at 2.54 0) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp b08870ac-6163-4322-871a-a3782ff099c1)
