@@ -400,7 +400,7 @@
       "no_connect_dangling": "warning",
       "pin_not_connected": "error",
       "pin_not_driven": "error",
-      "pin_to_pin": "warning",
+      "pin_to_pin": "error",
       "power_pin_not_driven": "error",
       "similar_labels": "warning",
       "simulation_model_issue": "error",
@@ -504,6 +504,22 @@
     [
       "5af20717-5e27-47db-a966-528861037e2a",
       ""
+    ],
+    [
+      "5eff4fca-40d7-4275-90d1-5587d36d566e",
+      "oscillators"
+    ],
+    [
+      "3dd53398-816d-4dcf-9b98-21d2ff7a7de8",
+      "LCD I2C, buttons, LED"
+    ],
+    [
+      "545e455d-2da7-4313-a9df-bd6857d725ea",
+      "debug & reset"
+    ],
+    [
+      "1e4dbc61-383b-418c-a3c9-53de5b92d03f",
+      "power supply"
     ]
   ],
   "text_variables": {}
